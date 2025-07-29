@@ -1,21 +1,14 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { frogs } from "../frogs";
-import { Task, Comment } from "../types";
+import { Task } from "../types";
+import TaskComments from "./TaskComments";
 
 interface TaskItemProps {
     task: Task;
     frog: { name: string; svg: string };
-    openComments: { [taskId: number]: boolean };
-    comments: { [taskId: number]: Comment[] };
-    commentInputs: { [taskId: number]: string };
-    commentLoading: { [taskId: number]: boolean };
-    commentSubmitting: { [taskId: number]: boolean };
     deletingTasks: { [taskId: number]: boolean };
     completingTasks: { [taskId: number]: boolean };
-    onToggleComments: (taskId: number) => void;
-    onCommentInput: (taskId: number, value: string) => void;
-    onAddComment: (taskId: number) => void;
     onDeleteTask: (taskId: number) => void;
     onToggleComplete: (taskId: number, currentCompleted: boolean) => void;
     isCompleted?: boolean;
@@ -24,20 +17,14 @@ interface TaskItemProps {
 export default function TaskItem({
     task,
     frog,
-    openComments,
-    comments,
-    commentInputs,
-    commentLoading,
-    commentSubmitting,
     deletingTasks,
     completingTasks,
-    onToggleComments,
-    onCommentInput,
-    onAddComment,
     onDeleteTask,
     onToggleComplete,
     isCompleted = false
 }: TaskItemProps) {
+    const [commentsOpen, setCommentsOpen] = useState(false);
+
     return (
         <li className={`bg-white/90 rounded-xl shadow-lg p-4 flex gap-4 items-start border-l-8 border-green-800/60 hover:bg-green-50 transition ${isCompleted ? 'opacity-75' : ''}`}>
             <span className="shrink-0 w-12 h-12" title={frog.name} dangerouslySetInnerHTML={{ __html: frog.svg }} />
@@ -59,9 +46,9 @@ export default function TaskItem({
                 <div className="flex gap-2 mb-2">
                     <button
                         className="text-green-700 hover:underline text-xs"
-                        onClick={() => onToggleComments(task.id)}
+                        onClick={() => setCommentsOpen(!commentsOpen)}
                     >
-                        {openComments[task.id] ? "Hide Comments" : "Show Comments"}
+                        {commentsOpen ? "Hide Comments" : "Show Comments"}
                     </button>
                     <button
                         className="text-red-600 hover:text-red-800 disabled:opacity-60 p-1 rounded hover:bg-red-50 transition-colors"
@@ -78,46 +65,11 @@ export default function TaskItem({
                         )}
                     </button>
                 </div>
-                {openComments[task.id] && (
-                    <div className="bg-green-50 rounded p-2 mt-1">
-                        {commentLoading[task.id] ? (
-                            <div className="text-green-900 text-xs">Loading comments...</div>
-                        ) : (
-                            <>
-                                <div className="flex flex-col gap-1 mb-2 max-h-32 overflow-y-auto">
-                                    {(comments[task.id] || []).length === 0 ? (
-                                        <div className="text-green-900 text-xs">No comments yet.</div>
-                                    ) : (
-                                        comments[task.id].map((c) => (
-                                            <div key={c.id} className="flex gap-2 items-baseline">
-                                                <span className="text-green-900 text-xs">{c.text}</span>
-                                                <span className="text-gray-500 text-[10px]">{new Date(c.timestamp).toLocaleString()}</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                                <div className="flex gap-2 mt-1">
-                                    <input
-                                        className="border rounded px-2 py-1 text-xs flex-1"
-                                        value={commentInputs[task.id] || ""}
-                                        onChange={e => onCommentInput(task.id, e.target.value)}
-                                        placeholder="Add a comment..."
-                                        maxLength={200}
-                                        title="Add a comment"
-                                    />
-                                    <button
-                                        className="bg-green-700 hover:bg-green-800 text-white rounded px-3 py-1 text-xs disabled:opacity-60"
-                                        onClick={() => onAddComment(task.id)}
-                                        disabled={commentSubmitting[task.id] || !(commentInputs[task.id]?.trim())}
-                                        type="button"
-                                    >
-                                        {commentSubmitting[task.id] ? "Adding..." : "Add"}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
+                <TaskComments
+                    taskId={task.id}
+                    isOpen={commentsOpen}
+                    onToggle={() => setCommentsOpen(!commentsOpen)}
+                />
             </div>
             <div className="shrink-0 flex items-center">
                 <input

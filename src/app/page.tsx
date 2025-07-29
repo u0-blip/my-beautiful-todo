@@ -35,11 +35,6 @@ export default function Home() {
     sort: "created"
   });
   const [allTags, setAllTags] = useState<string[]>([]);
-  const [openComments, setOpenComments] = useState<{ [taskId: number]: boolean }>({});
-  const [comments, setComments] = useState<{ [taskId: number]: Comment[] }>({});
-  const [commentInputs, setCommentInputs] = useState<{ [taskId: number]: string }>({});
-  const [commentLoading, setCommentLoading] = useState<{ [taskId: number]: boolean }>({});
-  const [commentSubmitting, setCommentSubmitting] = useState<{ [taskId: number]: boolean }>({});
   const [showSignup, setShowSignup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [authForm, setAuthForm] = useState<AuthForm>({ email: "", password: "" });
@@ -135,39 +130,7 @@ export default function Home() {
     setSubmitting(false);
   }
 
-  function toggleComments(taskId: number) {
-    setOpenComments((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
-    if (!comments[taskId]) {
-      setCommentLoading((prev) => ({ ...prev, [taskId]: true }));
-      fetch(`/api/comments?taskId=${taskId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setComments((prev) => ({ ...prev, [taskId]: data }));
-          setCommentLoading((prev) => ({ ...prev, [taskId]: false }));
-        });
-    }
-  }
 
-  function handleCommentInput(taskId: number, value: string) {
-    setCommentInputs((prev) => ({ ...prev, [taskId]: value }));
-  }
-
-  async function handleAddComment(taskId: number) {
-    const text = commentInputs[taskId]?.trim();
-    if (!text) return;
-    setCommentSubmitting((prev) => ({ ...prev, [taskId]: true }));
-    const res = await fetch("/api/comments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, taskId }),
-    });
-    if (res.ok) {
-      const newComment = await res.json();
-      setComments((prev) => ({ ...prev, [taskId]: [...(prev[taskId] || []), newComment] }));
-      setCommentInputs((prev) => ({ ...prev, [taskId]: "" }));
-    }
-    setCommentSubmitting((prev) => ({ ...prev, [taskId]: false }));
-  }
 
   async function handleDeleteTask(taskId: number) {
     if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
@@ -181,22 +144,6 @@ export default function Home() {
 
     if (res.ok) {
       setTasks((prev) => prev.filter(task => task.id !== taskId));
-      // Clean up related state
-      setComments((prev) => {
-        const newComments = { ...prev };
-        delete newComments[taskId];
-        return newComments;
-      });
-      setOpenComments((prev) => {
-        const newOpenComments = { ...prev };
-        delete newOpenComments[taskId];
-        return newOpenComments;
-      });
-      setCommentInputs((prev) => {
-        const newCommentInputs = { ...prev };
-        delete newCommentInputs[taskId];
-        return newCommentInputs;
-      });
     } else {
       alert("Failed to delete task. Please try again.");
     }
@@ -295,16 +242,8 @@ export default function Home() {
             <TaskList
               title="Current Tasks"
               tasks={tasks.filter(task => !task.completed)}
-              openComments={openComments}
-              comments={comments}
-              commentInputs={commentInputs}
-              commentLoading={commentLoading}
-              commentSubmitting={commentSubmitting}
               deletingTasks={deletingTasks}
               completingTasks={completingTasks}
-              onToggleComments={toggleComments}
-              onCommentInput={handleCommentInput}
-              onAddComment={handleAddComment}
               onDeleteTask={handleDeleteTask}
               onToggleComplete={handleToggleComplete}
               emptyMessage="You have no active tasks"
@@ -313,16 +252,8 @@ export default function Home() {
             <TaskList
               title="Done"
               tasks={tasks.filter(task => task.completed)}
-              openComments={openComments}
-              comments={comments}
-              commentInputs={commentInputs}
-              commentLoading={commentLoading}
-              commentSubmitting={commentSubmitting}
               deletingTasks={deletingTasks}
               completingTasks={completingTasks}
-              onToggleComments={toggleComments}
-              onCommentInput={handleCommentInput}
-              onAddComment={handleAddComment}
               onDeleteTask={handleDeleteTask}
               onToggleComplete={handleToggleComplete}
               isCompleted={true}

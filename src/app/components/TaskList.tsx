@@ -7,16 +7,8 @@ import { Task, Comment } from "../types";
 interface TaskListProps {
     title: string;
     tasks: Task[];
-    openComments: { [taskId: number]: boolean };
-    comments: { [taskId: number]: Comment[] };
-    commentInputs: { [taskId: number]: string };
-    commentLoading: { [taskId: number]: boolean };
-    commentSubmitting: { [taskId: number]: boolean };
     deletingTasks: { [taskId: number]: boolean };
     completingTasks: { [taskId: number]: boolean };
-    onToggleComments: (taskId: number) => void;
-    onCommentInput: (taskId: number, value: string) => void;
-    onAddComment: (taskId: number) => void;
     onDeleteTask: (taskId: number) => void;
     onToggleComplete: (taskId: number, currentCompleted: boolean) => void;
     isCompleted?: boolean;
@@ -26,16 +18,8 @@ interface TaskListProps {
 export default function TaskList({
     title,
     tasks,
-    openComments,
-    comments,
-    commentInputs,
-    commentLoading,
-    commentSubmitting,
     deletingTasks,
     completingTasks,
-    onToggleComments,
-    onCommentInput,
-    onAddComment,
     onDeleteTask,
     onToggleComplete,
     isCompleted = false,
@@ -57,16 +41,8 @@ export default function TaskList({
                                 key={task.id}
                                 task={task}
                                 frog={frog}
-                                openComments={openComments}
-                                comments={comments}
-                                commentInputs={commentInputs}
-                                commentLoading={commentLoading}
-                                commentSubmitting={commentSubmitting}
                                 deletingTasks={deletingTasks}
                                 completingTasks={completingTasks}
-                                onToggleComments={onToggleComments}
-                                onCommentInput={onCommentInput}
-                                onAddComment={onAddComment}
                                 onDeleteTask={onDeleteTask}
                                 onToggleComplete={onToggleComplete}
                                 isCompleted={isCompleted}
