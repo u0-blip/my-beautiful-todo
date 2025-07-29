@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  dueDate     DateTime?
+  size        SizeLabel
+  urgency     UrgencyLabel
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tags        TaskTag[]
+  comments    Comment[]
+}
+
+enum SizeLabel {
+  Small
+  Medium
+  Big
+}
+
+enum UrgencyLabel {
+  Low
+  Normal
+  High
+  Critical
+}
+
+model Tag {
+  id    Int      @id @default(autoincrement())
+  name  String   @unique
+  tasks TaskTag[]
+}
+
+model TaskTag {
+  task   Task @relation(fields: [taskId], references: [id])
+  taskId Int
+  tag    Tag  @relation(fields: [tagId], references: [id])
+  tagId  Int
+  @@id([taskId, tagId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  timestamp DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  createdAt DateTime @default(now())
+}
