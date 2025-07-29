@@ -7,56 +7,103 @@ import TaskComments from "./TaskComments";
 interface TaskItemProps {
     task: Task;
     frog: { name: string; svg: string };
-    deletingTasks: { [taskId: number]: boolean };
-    completingTasks: { [taskId: number]: boolean };
-    onDeleteTask: (taskId: number) => void;
-    onToggleComplete: (taskId: number, currentCompleted: boolean) => void;
+    onTaskUpdate: (updatedTask: Task) => void;
+    onTaskDeleted: (taskId: number) => void;
     isCompleted?: boolean;
 }
 
 export default function TaskItem({
     task,
     frog,
-    deletingTasks,
-    completingTasks,
-    onDeleteTask,
-    onToggleComplete,
+    onTaskUpdate,
+    onTaskDeleted,
     isCompleted = false
 }: TaskItemProps) {
     const [commentsOpen, setCommentsOpen] = useState(false);
+    const [completing, setCompleting] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    async function handleToggleComplete() {
+        setCompleting(true);
+
+        try {
+            const res = await fetch(`/api/tasks?id=${task.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ completed: !task.completed }),
+            });
+
+            if (res.ok) {
+                const updatedTask = await res.json();
+                onTaskUpdate(updatedTask);
+            } else {
+                alert("Failed to update task. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error updating task:", error);
+            alert("Failed to update task. Please try again.");
+        } finally {
+            setCompleting(false);
+        }
+    }
+
+    async function handleDeleteTask() {
+        if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+            return;
+        }
+
+        setDeleting(true);
+
+        try {
+            const res = await fetch(`/api/tasks?id=${task.id}`, {
+                method: "DELETE",
+            });
+
+            if (res.ok) {
+                onTaskDeleted(task.id);
+            } else {
+                alert("Failed to delete task. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            alert("Failed to delete task. Please try again.");
+        } finally {
+            setDeleting(false);
+        }
+    }
 
     return (
-        <li className={`bg-white/90 rounded-xl shadow-lg p-4 flex gap-4 items-start border-l-8 border-green-800/60 hover:bg-green-50 transition ${isCompleted ? 'opacity-75' : ''}`}>
+        <li className={`bg-white/90 dark:bg-gray-800/90 rounded-xl shadow-lg p-4 flex gap-4 items-start border-l-8 border-green-800/60 dark:border-green-600/60 hover:bg-green-50 dark:hover:bg-gray-700/90 transition ${isCompleted ? 'opacity-75' : ''}`}>
             <span className="shrink-0 w-12 h-12" title={frog.name} dangerouslySetInnerHTML={{ __html: frog.svg }} />
             <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                    <span className={`font-bold text-lg ${task.completed ? 'line-through text-gray-500' : 'text-green-900'}`}>{task.title}</span>
+                    <span className={`font-bold text-lg ${task.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-green-900 dark:text-green-100'}`}>{task.title}</span>
                 </div>
-                <div className="text-green-800 text-sm mb-2">{task.description}</div>
+                <div className="text-green-800 dark:text-green-200 text-sm mb-2">{task.description}</div>
                 <div className="flex flex-wrap gap-2 mb-2">
-                    <span className="px-2 py-0.5 bg-green-100 text-green-900 rounded-full text-xs">Size: {task.size}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${task.urgency === 'Critical' ? 'bg-red-400 text-white' : task.urgency === 'High' ? 'bg-orange-300 text-orange-900' : task.urgency === 'Normal' ? 'bg-yellow-200 text-yellow-900' : 'bg-green-200 text-green-900'}`}>Urgency: {task.urgency}</span>
-                    {task.dueDate && <span className="px-2 py-0.5 bg-blue-100 text-blue-900 rounded-full text-xs">Due: {new Date(task.dueDate).toLocaleString()}</span>}
+                    <span className="px-2 py-0.5 bg-green-100 dark:bg-green-800 text-green-900 dark:text-green-100 rounded-full text-xs">Size: {task.size}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${task.urgency === 'Critical' ? 'bg-red-400 dark:bg-red-600 text-white' : task.urgency === 'High' ? 'bg-orange-300 dark:bg-orange-600 text-orange-900 dark:text-orange-100' : task.urgency === 'Normal' ? 'bg-yellow-200 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-100' : 'bg-green-200 dark:bg-green-600 text-green-900 dark:text-green-100'}`}>Urgency: {task.urgency}</span>
+                    {task.dueDate && <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 rounded-full text-xs">Due: {new Date(task.dueDate).toLocaleString()}</span>}
                 </div>
                 <div className="flex flex-wrap gap-1 mb-2">
                     {task.tags.map((t) => (
-                        <span key={t.tag.name} className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded-full text-xs">#{t.tag.name}</span>
+                        <span key={t.tag.name} className="px-2 py-0.5 bg-emerald-200 dark:bg-emerald-700 text-emerald-900 dark:text-emerald-100 rounded-full text-xs">#{t.tag.name}</span>
                     ))}
                 </div>
                 <div className="flex gap-2 mb-2">
                     <button
-                        className="text-green-700 hover:underline text-xs"
+                        className="text-green-700 dark:text-green-400 hover:underline text-xs"
                         onClick={() => setCommentsOpen(!commentsOpen)}
                     >
                         {commentsOpen ? "Hide Comments" : "Show Comments"}
                     </button>
                     <button
-                        className="text-red-600 hover:text-red-800 disabled:opacity-60 p-1 rounded hover:bg-red-50 transition-colors"
-                        onClick={() => onDeleteTask(task.id)}
-                        disabled={deletingTasks[task.id]}
+                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 disabled:opacity-60 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        onClick={handleDeleteTask}
+                        disabled={deleting}
                         title="Delete task"
                     >
-                        {deletingTasks[task.id] ? (
+                        {deleting ? (
                             <span className="text-xs">Deleting...</span>
                         ) : (
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -75,9 +122,9 @@ export default function TaskItem({
                 <input
                     type="checkbox"
                     checked={task.completed}
-                    onChange={() => onToggleComplete(task.id, task.completed)}
-                    disabled={completingTasks[task.id]}
-                    className="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-60 cursor-pointer"
+                    onChange={handleToggleComplete}
+                    disabled={completing}
+                    className="w-5 h-5 text-green-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 focus:ring-2 disabled:opacity-60 cursor-pointer"
                     title={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 />
             </div>

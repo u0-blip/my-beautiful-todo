@@ -18,12 +18,12 @@ export default function TaskFilters({
     onExport
 }: TaskFiltersProps) {
     return (
-        <div className="max-w-4xl mx-auto mb-6 flex flex-wrap gap-3 items-center bg-white/80 rounded-xl p-4 shadow">
+        <div className="max-w-4xl mx-auto mb-6 flex flex-wrap gap-3 items-center bg-white/80 dark:bg-gray-800/80 rounded-xl p-4 shadow">
             <select
                 name="tag"
                 value={filters.tag}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Filter by tag"
             >
                 <option value="">All Tags</option>
@@ -35,7 +35,7 @@ export default function TaskFilters({
                 name="size"
                 value={filters.size}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Filter by size"
             >
                 <option value="">All Sizes</option>
@@ -47,7 +47,7 @@ export default function TaskFilters({
                 name="urgency"
                 value={filters.urgency}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Filter by urgency"
             >
                 <option value="">All Urgencies</option>
@@ -60,7 +60,7 @@ export default function TaskFilters({
                 name="completed"
                 value={filters.completed}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Filter by completion"
             >
                 <option value="">All Statuses</option>
@@ -71,7 +71,7 @@ export default function TaskFilters({
                 name="due"
                 value={filters.due}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Filter by due date"
             >
                 <option value="">All Due Dates</option>
@@ -83,21 +83,21 @@ export default function TaskFilters({
                 name="sort"
                 value={filters.sort}
                 onChange={onFilterChange}
-                className="border rounded px-2 py-1 text-green-900"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-green-900 dark:text-green-100 bg-white dark:bg-gray-700"
                 title="Sort by"
             >
                 <option value="created">Sort: Created</option>
                 <option value="due">Sort: Due Date</option>
             </select>
             <button
-                className="ml-auto bg-green-200 hover:bg-green-300 text-green-900 px-3 py-1 rounded shadow text-sm"
+                className="ml-auto bg-green-200 hover:bg-green-300 dark:bg-green-700 dark:hover:bg-green-600 text-green-900 dark:text-green-100 px-3 py-1 rounded shadow text-sm transition-colors"
                 onClick={onResetFilters}
                 type="button"
             >
                 Reset Filters
             </button>
             <button
-                className="bg-blue-200 hover:bg-blue-300 text-blue-900 px-3 py-1 rounded shadow text-sm"
+                className="bg-blue-200 hover:bg-blue-300 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-900 dark:text-blue-100 px-3 py-1 rounded shadow text-sm transition-colors"
                 onClick={onExport}
                 type="button"
             >

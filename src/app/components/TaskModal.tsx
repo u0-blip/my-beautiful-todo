@@ -1,42 +1,104 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { frogs } from "../frogs";
-import { TaskForm } from "../types";
+import { TaskForm, Task } from "../types";
 
 interface TaskModalProps {
     showModal: boolean;
-    frogIdx: number;
-    form: TaskForm;
-    formError: string;
-    submitting: boolean;
-    onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-    onRerollFrog: () => void;
+    onTaskCreated: (task: Task) => void;
 }
 
 export default function TaskModal({
     showModal,
-    frogIdx,
-    form,
-    formError,
-    submitting,
-    onSubmit,
     onClose,
-    onChange,
-    onRerollFrog
+    onTaskCreated
 }: TaskModalProps) {
+    const [frogIdx, setFrogIdx] = useState(() => Math.floor(Math.random() * frogs.length));
+    const [form, setForm] = useState<TaskForm>({
+        title: "",
+        description: "",
+        dueDate: "",
+        size: "Small",
+        urgency: "Normal",
+        tags: "",
+    });
+    const [formError, setFormError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
     if (!showModal) return null;
+
+    function handleRerollFrog() {
+        setFrogIdx(Math.floor(Math.random() * frogs.length));
+    }
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    }
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setFormError("");
+
+        if (!form.title.trim()) {
+            setFormError("Title is required");
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            // Parse tags (comma or space separated)
+            const tagsArr = form.tags.split(/[, ]+/).filter(Boolean);
+
+            const res = await fetch("/api/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: form.title,
+                    description: form.description,
+                    dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
+                    size: form.size,
+                    urgency: form.urgency,
+                    tags: tagsArr,
+                }),
+            });
+
+            if (!res.ok) {
+                setFormError("Failed to create task");
+                return;
+            }
+
+            const newTask = await res.json();
+            onTaskCreated(newTask);
+
+            // Reset form
+            setForm({
+                title: "",
+                description: "",
+                dueDate: "",
+                size: "Small",
+                urgency: "Normal",
+                tags: "",
+            });
+            setFormError("");
+            onClose();
+        } catch (error) {
+            setFormError("Failed to create task");
+        } finally {
+            setSubmitting(false);
+        }
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <form
-                className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative flex flex-col gap-4"
-                onSubmit={onSubmit}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-md relative flex flex-col gap-4"
+                onSubmit={handleSubmit}
             >
                 <button
                     type="button"
-                    className="absolute top-3 right-3 text-green-900 hover:text-red-600 text-2xl"
+                    className="absolute top-3 right-3 text-green-900 dark:text-green-400 hover:text-red-600 dark:hover:text-red-400 text-2xl"
                     onClick={onClose}
                     aria-label="Close"
                 >
@@ -50,58 +112,58 @@ export default function TaskModal({
                     />
                     <button
                         type="button"
-                        className="text-xs text-green-700 hover:underline"
-                        onClick={onRerollFrog}
+                        className="text-xs text-green-700 dark:text-green-400 hover:underline"
+                        onClick={handleRerollFrog}
                         tabIndex={-1}
                     >
                         Reroll Frog
                     </button>
                 </div>
-                <label htmlFor="task-title" className="font-semibold text-green-900">Title *</label>
+                <label htmlFor="task-title" className="font-semibold text-green-900 dark:text-green-100">Title *</label>
                 <input
                     id="task-title"
                     name="title"
-                    className="border rounded px-3 py-2 mb-1"
+                    className="border dark:border-gray-600 rounded px-3 py-2 mb-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     value={form.title}
-                    onChange={onChange}
+                    onChange={handleChange}
                     required
                     maxLength={100}
                     autoFocus
                     placeholder="Enter task title"
                     title="Task title"
                 />
-                <label htmlFor="task-desc" className="font-semibold text-green-900">Description</label>
+                <label htmlFor="task-desc" className="font-semibold text-green-900 dark:text-green-100">Description</label>
                 <textarea
                     id="task-desc"
                     name="description"
-                    className="border rounded px-3 py-2 mb-1"
+                    className="border dark:border-gray-600 rounded px-3 py-2 mb-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     value={form.description}
-                    onChange={onChange}
+                    onChange={handleChange}
                     rows={2}
                     maxLength={300}
                     placeholder="Enter description (optional)"
                     title="Task description"
                 />
-                <label htmlFor="task-due" className="font-semibold text-green-900">Due Date & Time</label>
+                <label htmlFor="task-due" className="font-semibold text-green-900 dark:text-green-100">Due Date & Time</label>
                 <input
                     id="task-due"
                     name="dueDate"
                     type="datetime-local"
-                    className="border rounded px-3 py-2 mb-1"
+                    className="border dark:border-gray-600 rounded px-3 py-2 mb-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     value={form.dueDate}
-                    onChange={onChange}
+                    onChange={handleChange}
                     placeholder="Due date and time"
                     title="Due date and time"
                 />
                 <div className="flex gap-2">
                     <div className="flex-1">
-                        <label htmlFor="task-size" className="font-semibold text-green-900">Size</label>
+                        <label htmlFor="task-size" className="font-semibold text-green-900 dark:text-green-100">Size</label>
                         <select
                             id="task-size"
                             name="size"
-                            className="border rounded px-3 py-2 w-full"
+                            className="border dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             value={form.size}
-                            onChange={onChange}
+                            onChange={handleChange}
                             title="Task size"
                         >
                             <option value="Small">Small</option>
@@ -110,13 +172,13 @@ export default function TaskModal({
                         </select>
                     </div>
                     <div className="flex-1">
-                        <label htmlFor="task-urgency" className="font-semibold text-green-900">Urgency</label>
+                        <label htmlFor="task-urgency" className="font-semibold text-green-900 dark:text-green-100">Urgency</label>
                         <select
                             id="task-urgency"
                             name="urgency"
-                            className="border rounded px-3 py-2 w-full"
+                            className="border dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             value={form.urgency}
-                            onChange={onChange}
+                            onChange={handleChange}
                             title="Task urgency"
                         >
                             <option value="Low">Low</option>
@@ -126,21 +188,21 @@ export default function TaskModal({
                         </select>
                     </div>
                 </div>
-                <label htmlFor="task-tags" className="font-semibold text-green-900">Tags (comma or space separated)</label>
+                <label htmlFor="task-tags" className="font-semibold text-green-900 dark:text-green-100">Tags (comma or space separated)</label>
                 <input
                     id="task-tags"
                     name="tags"
-                    className="border rounded px-3 py-2 mb-1"
+                    className="border dark:border-gray-600 rounded px-3 py-2 mb-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     value={form.tags}
-                    onChange={onChange}
+                    onChange={handleChange}
                     placeholder="e.g. work, frog, urgent"
                     maxLength={100}
                     title="Task tags"
                 />
-                {formError && <div className="text-red-600 text-sm mt-1">{formError}</div>}
+                {formError && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{formError}</div>}
                 <button
                     type="submit"
-                    className="mt-2 bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded-full shadow-lg disabled:opacity-60"
+                    className="mt-2 bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg disabled:opacity-60 transition-colors"
                     disabled={submitting}
                 >
                     {submitting ? "Adding..." : "Add Task"}

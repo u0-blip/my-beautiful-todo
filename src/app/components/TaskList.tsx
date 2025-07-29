@@ -7,10 +7,8 @@ import { Task, Comment } from "../types";
 interface TaskListProps {
     title: string;
     tasks: Task[];
-    deletingTasks: { [taskId: number]: boolean };
-    completingTasks: { [taskId: number]: boolean };
-    onDeleteTask: (taskId: number) => void;
-    onToggleComplete: (taskId: number, currentCompleted: boolean) => void;
+    onTaskUpdate: (updatedTask: Task) => void;
+    onTaskDeleted: (taskId: number) => void;
     isCompleted?: boolean;
     emptyMessage?: string;
 }
@@ -18,16 +16,11 @@ interface TaskListProps {
 export default function TaskList({
     title,
     tasks,
-    deletingTasks,
-    completingTasks,
-    onDeleteTask,
-    onToggleComplete,
+    onTaskUpdate,
+    onTaskDeleted,
     isCompleted = false,
     emptyMessage
 }: TaskListProps) {
-    if (tasks.length === 0) {
-        return null;
-    }
 
     return (
         <div className="mb-8">
@@ -41,10 +34,8 @@ export default function TaskList({
                                 key={task.id}
                                 task={task}
                                 frog={frog}
-                                deletingTasks={deletingTasks}
-                                completingTasks={completingTasks}
-                                onDeleteTask={onDeleteTask}
-                                onToggleComplete={onToggleComplete}
+                                onTaskUpdate={onTaskUpdate}
+                                onTaskDeleted={onTaskDeleted}
                                 isCompleted={isCompleted}
                             />
                         );

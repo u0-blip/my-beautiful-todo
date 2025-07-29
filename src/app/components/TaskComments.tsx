@@ -62,19 +62,19 @@ export default function TaskComments({ taskId, isOpen, onToggle }: TaskCommentsP
     if (!isOpen) return null;
 
     return (
-        <div className="bg-green-50 rounded p-2 mt-1">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded p-2 mt-1">
             {loading ? (
-                <div className="text-green-900 text-xs">Loading comments...</div>
+                <div className="text-green-900 dark:text-green-100 text-xs">Loading comments...</div>
             ) : (
                 <>
                     <div className="flex flex-col gap-1 mb-2 max-h-32 overflow-y-auto">
                         {comments.length === 0 ? (
-                            <div className="text-green-900 text-xs">No comments yet.</div>
+                            <div className="text-green-900 dark:text-green-100 text-xs">No comments yet.</div>
                         ) : (
                             comments.map((comment) => (
                                 <div key={comment.id} className="flex gap-2 items-baseline">
-                                    <span className="text-green-900 text-xs">{comment.text}</span>
-                                    <span className="text-gray-500 text-[10px]">
+                                    <span className="text-green-900 dark:text-green-100 text-xs">{comment.text}</span>
+                                    <span className="text-gray-500 dark:text-gray-400 text-[10px]">
                                         {new Date(comment.timestamp).toLocaleString()}
                                     </span>
                                 </div>
@@ -83,7 +83,7 @@ export default function TaskComments({ taskId, isOpen, onToggle }: TaskCommentsP
                     </div>
                     <div className="flex gap-2 mt-1">
                         <input
-                            className="border rounded px-2 py-1 text-xs flex-1"
+                            className="border dark:border-gray-600 rounded px-2 py-1 text-xs flex-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                             value={commentInput}
                             onChange={e => setCommentInput(e.target.value)}
                             placeholder="Add a comment..."
@@ -92,7 +92,7 @@ export default function TaskComments({ taskId, isOpen, onToggle }: TaskCommentsP
                             onKeyPress={e => e.key === 'Enter' && handleAddComment()}
                         />
                         <button
-                            className="bg-green-700 hover:bg-green-800 text-white rounded px-3 py-1 text-xs disabled:opacity-60"
+                            className="bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700 text-white rounded px-3 py-1 text-xs disabled:opacity-60 transition-colors"
                             onClick={handleAddComment}
                             disabled={submitting || !commentInput.trim()}
                             type="button"
