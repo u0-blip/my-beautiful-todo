@@ -87,4 +87,78 @@ export async function POST(req: NextRequest) {
     }
   });
   return NextResponse.json(task);
-} 
+}
+
+// DELETE: Delete a task by ID
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const taskId = searchParams.get("id");
+  
+  if (!taskId) {
+    return NextResponse.json({ error: "Task ID is required" }, { status: 400 });
+  }
+  
+  const id = parseInt(taskId);
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
+  }
+  
+  try {
+    // Delete related records first (comments and task tags)
+    await prisma.comment.deleteMany({
+      where: { taskId: id }
+    });
+    
+    await prisma.taskTag.deleteMany({
+      where: { taskId: id }
+    });
+    
+    // Delete the task
+    await prisma.task.delete({
+      where: { id }
+    });
+    
+    return NextResponse.json({ success: true, message: "Task deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
+  }
+}
+
+// PATCH: Update a task (e.g., mark as completed)
+export async function PATCH(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const taskId = searchParams.get("id");
+  
+  if (!taskId) {
+    return NextResponse.json({ error: "Task ID is required" }, { status: 400 });
+  }
+  
+  const id = parseInt(taskId);
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "Invalid task ID" }, { status: 400 });
+  }
+  
+  try {
+    const data = await req.json();
+    const { completed } = data;
+    
+    if (typeof completed !== 'boolean') {
+      return NextResponse.json({ error: "Completed status is required" }, { status: 400 });
+    }
+    
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: { completed },
+      include: {
+        tags: { include: { tag: true } },
+        comments: true
+      }
+    });
+    
+    return NextResponse.json(updatedTask);
+  } catch (error) {
+    console.error("Error updating task:", error);
+    return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
+  }
+}
