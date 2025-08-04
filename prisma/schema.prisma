@@ -22,8 +22,10 @@ model Task {
   size          SizeLabel
   urgency       UrgencyLabel
   completed     Boolean   @default(false)
+  completedAt   DateTime? // When the task was completed
   isWeekly      Boolean   @default(false)
   timesPerWeek  Int?      // e.g. needs to be done 3 times a week
+  originalTaskId Int?     // For completion tasks, reference to the original task
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   tags          TaskTag[]

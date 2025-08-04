@@ -14,6 +14,21 @@ export async function GET(req: NextRequest) {
   if (searchParams.has("size")) where.size = searchParams.get("size");
   if (searchParams.has("urgency")) where.urgency = searchParams.get("urgency");
   if (searchParams.has("completed")) where.completed = searchParams.get("completed") === "true";
+
+  // Auto-hide completed tasks older than 1 day (unless explicitly requested)
+  const showAllCompleted = searchParams.has("showAllCompleted") && searchParams.get("showAllCompleted") === "true";
+  if (!showAllCompleted) {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    where.OR = [
+      { completed: false },
+      {
+        completed: true,
+        completedAt: { gte: oneDayAgo }
+      }
+    ];
+  }
+
   if (searchParams.has("due")) {
     const due = searchParams.get("due");
     const now = new Date();
@@ -179,7 +194,9 @@ export async function PATCH(req: NextRequest) {
     // Get the task to check if it's weekly
     const task = await prisma.task.findUnique({
       where: { id },
-      select: { isWeekly: true, timesPerWeek: true }
+      include: {
+        tags: { include: { tag: true } }
+      }
     });
 
     if (!task) {
@@ -187,6 +204,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     let updatedCompleted = completed;
+    let newCompletedTask: any = null;
 
     // Handle weekly task logic
     if (task.isWeekly && task.timesPerWeek) {
@@ -194,9 +212,40 @@ export async function PATCH(req: NextRequest) {
         // Create a completion record
         await createTaskCompletion(id, userId || 1); // Default to user 1 if not provided
 
-        // Check if task is complete for the week
-        const isCompleteForWeek = await isTaskCompleteForWeek(id, userId || 1);
-        updatedCompleted = isCompleteForWeek;
+        // Create a new completed task instance for this completion
+        const completionCount = await getWeeklyCompletionCount(id, userId || 1);
+
+        try {
+          newCompletedTask = await prisma.task.create({
+            data: {
+              title: `${task.title} (Completion ${completionCount})`,
+              description: `Weekly task completion #${completionCount} of ${task.timesPerWeek}`,
+              size: task.size,
+              urgency: task.urgency,
+              completed: true,
+              completedAt: new Date(),
+              isWeekly: false, // This is a completion instance, not a weekly task
+              timesPerWeek: null,
+              originalTaskId: task.id, // Reference to the original task for frog consistency
+              tags: {
+                create: task.tags?.map((tag: any) => ({
+                  tag: { connectOrCreate: { where: { name: tag.tag.name }, create: { name: tag.tag.name } } }
+                })) || []
+              }
+            },
+            include: {
+              tags: { include: { tag: true } },
+              comments: true
+            }
+          });
+        } catch (error) {
+          console.error('❌ Error creating completion task:', error);
+          newCompletedTask = null;
+        }
+
+        // For weekly tasks, we don't mark the original task as completed
+        // It stays active until the week is complete
+        updatedCompleted = false;
       } else {
         // For uncompleting, we could remove the latest completion record
         // For now, just set completed to false
@@ -206,7 +255,10 @@ export async function PATCH(req: NextRequest) {
 
     const updatedTask = await prisma.task.update({
       where: { id },
-      data: { completed: updatedCompleted },
+      data: {
+        completed: updatedCompleted,
+        completedAt: updatedCompleted ? new Date() : null
+      },
       include: {
         tags: { include: { tag: true } },
         comments: true
@@ -219,11 +271,18 @@ export async function PATCH(req: NextRequest) {
       weeklyCompletionCount = await getWeeklyCompletionCount(id, userId || 1);
     }
 
-    return NextResponse.json({
+    const response: any = {
       ...updatedTask,
       weeklyCompletionCount,
       timesPerWeek: task.timesPerWeek
-    });
+    };
+
+    // If this was a weekly task completion, include the new completed task
+    if (task.isWeekly && task.timesPerWeek && completed && newCompletedTask) {
+      response.newCompletedTask = newCompletedTask;
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error updating task:", error);
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });

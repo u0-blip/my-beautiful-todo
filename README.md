@@ -7,6 +7,9 @@ A beautiful, feature-rich todo application built with Next.js, featuring weekly 
 - **Task Management**: Create, edit, and delete tasks with size and urgency levels
 - **Weekly Tasks**: Track recurring tasks that need to be completed multiple times per week
 - **Progress Tracking**: Visual progress bars and completion indicators for weekly goals
+- **Completion Instances**: Each weekly task completion creates a separate task item for detailed tracking
+- **Auto-Hide Completed Tasks**: Completed tasks automatically hide after 24 hours to keep your list clean
+- **Completed Tasks Archive**: "See All Completed Tasks" button to view your full completion history
 - **Tag System**: Organize tasks with custom tags
 - **Comments**: Add comments to tasks for additional context
 - **Dark Mode**: Beautiful dark and light theme support
@@ -30,6 +33,14 @@ The app now supports weekly tasks that need to be completed multiple times per w
 3. **Visual Indicators**: See progress with dots and progress bars
 4. **Weekly Stats**: Click "Weekly Stats" to view detailed completion history
 5. **Automatic Reset**: Progress resets every Monday for a fresh start
+6. **Completion Instances**: Each completion creates a separate task item in your completed tasks list
+
+### Auto-Hide Completed Tasks
+
+- **Automatic Cleanup**: Completed tasks automatically disappear from your main view after 24 hours
+- **Keep Focus**: This helps you stay focused on current tasks without clutter
+- **Full History**: Click "See All Completed Tasks" to view your complete archive
+- **Completion Tracking**: Each task tracks exactly when it was completed for accurate filtering
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

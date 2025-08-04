@@ -10,6 +10,7 @@ interface TaskItemProps {
     frog: { name: string; svg: string };
     onTaskUpdate: (updatedTask: Task) => void;
     onTaskDeleted: (taskId: number) => void;
+    onNewCompletedTask?: (newTask: Task) => void;
     isCompleted?: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function TaskItem({
     frog,
     onTaskUpdate,
     onTaskDeleted,
+    onNewCompletedTask,
     isCompleted = false
 }: TaskItemProps) {
     const [commentsOpen, setCommentsOpen] = useState(false);
@@ -39,8 +41,13 @@ export default function TaskItem({
             });
 
             if (res.ok) {
-                const updatedTask = await res.json();
-                onTaskUpdate(updatedTask);
+                const response = await res.json();
+                onTaskUpdate(response);
+
+                // If this was a weekly task completion, we need to add the new completed task to the list
+                if (response.newCompletedTask && onNewCompletedTask) {
+                    onNewCompletedTask(response.newCompletedTask);
+                }
             } else {
                 alert("Failed to update task. Please try again.");
             }
@@ -111,6 +118,11 @@ export default function TaskItem({
                     {task.description}
                     {task.completed && <span className="ml-1">💫</span>}
                 </div>
+                {task.completed && task.completedAt && (
+                    <div className="text-xs text-green-500 dark:text-green-400 mb-2">
+                        ✨ Completed on {new Date(task.completedAt).toLocaleDateString()} at {new Date(task.completedAt).toLocaleTimeString()}
+                    </div>
+                )}
                 <div className="flex flex-wrap gap-2 mb-2">
                     <span className={`px-2 py-0.5 rounded-full text-xs transition-all duration-300 ${task.completed
                         ? 'bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-200 shadow-sm'

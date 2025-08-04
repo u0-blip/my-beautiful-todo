@@ -6,8 +6,10 @@ export interface Task {
   size: string;
   urgency: string;
   completed: boolean;
+  completedAt?: string;
   isWeekly?: boolean;
   timesPerWeek?: number;
+  originalTaskId?: number;
   weeklyCompletionCount?: number;
   createdAt: string;
   tags: { tag: { name: string } }[];
