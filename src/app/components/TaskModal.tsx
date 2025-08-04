@@ -22,6 +22,8 @@ export default function TaskModal({
         size: "Small",
         urgency: "Normal",
         tags: "",
+        isWeekly: false,
+        timesPerWeek: 1,
     });
     const [formError, setFormError] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -61,6 +63,8 @@ export default function TaskModal({
                     size: form.size,
                     urgency: form.urgency,
                     tags: tagsArr,
+                    isWeekly: form.isWeekly,
+                    timesPerWeek: form.isWeekly ? form.timesPerWeek : undefined,
                 }),
             });
 
@@ -80,6 +84,8 @@ export default function TaskModal({
                 size: "Small",
                 urgency: "Normal",
                 tags: "",
+                isWeekly: false,
+                timesPerWeek: 1,
             });
             setFormError("");
             onClose();
@@ -188,6 +194,43 @@ export default function TaskModal({
                         </select>
                     </div>
                 </div>
+
+                {/* Weekly Task Configuration */}
+                <div className="flex items-center gap-2 mb-2">
+                    <input
+                        id="task-weekly"
+                        name="isWeekly"
+                        type="checkbox"
+                        className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        checked={form.isWeekly}
+                        onChange={(e) => setForm({ ...form, isWeekly: e.target.checked })}
+                    />
+                    <label htmlFor="task-weekly" className="font-semibold text-green-900 dark:text-green-100">
+                        Weekly Task
+                    </label>
+                </div>
+
+                {form.isWeekly && (
+                    <div className="flex gap-2">
+                        <div className="flex-1">
+                            <label htmlFor="task-times-per-week" className="font-semibold text-green-900 dark:text-green-100">
+                                Times per Week
+                            </label>
+                            <input
+                                id="task-times-per-week"
+                                name="timesPerWeek"
+                                type="number"
+                                min="1"
+                                max="7"
+                                className="border dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                value={form.timesPerWeek}
+                                onChange={(e) => setForm({ ...form, timesPerWeek: parseInt(e.target.value) || 1 })}
+                                placeholder="e.g. 3"
+                            />
+                        </div>
+                    </div>
+                )}
+
                 <label htmlFor="task-tags" className="font-semibold text-green-900 dark:text-green-100">Tags (comma or space separated)</label>
                 <input
                     id="task-tags"

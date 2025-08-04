@@ -15,17 +15,20 @@ datasource db {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  dueDate     DateTime?
-  size        SizeLabel
-  urgency     UrgencyLabel
-  completed   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  tags        TaskTag[]
-  comments    Comment[]
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String?
+  dueDate       DateTime?
+  size          SizeLabel
+  urgency       UrgencyLabel
+  completed     Boolean   @default(false)
+  isWeekly      Boolean   @default(false)
+  timesPerWeek  Int?      // e.g. needs to be done 3 times a week
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  tags          TaskTag[]
+  comments      Comment[]
+  completions   TaskCompletion[]
 }
 
 enum SizeLabel {
@@ -63,9 +66,19 @@ model Comment {
   taskId    Int
 }
 
+model TaskCompletion {
+  id        Int      @id @default(autoincrement())
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  date      DateTime @default(now())  // when this specific instance was completed
+}
+
 model User {
   id       Int    @id @default(autoincrement())
   email    String @unique
   password String
   createdAt DateTime @default(now())
+  completions TaskCompletion[]
 }

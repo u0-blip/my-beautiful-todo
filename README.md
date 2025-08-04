@@ -1,3 +1,36 @@
+# My Beautiful Todo
+
+A beautiful, feature-rich todo application built with Next.js, featuring weekly task tracking, progress visualization, and a delightful frog-themed interface.
+
+## Features
+
+- **Task Management**: Create, edit, and delete tasks with size and urgency levels
+- **Weekly Tasks**: Track recurring tasks that need to be completed multiple times per week
+- **Progress Tracking**: Visual progress bars and completion indicators for weekly goals
+- **Tag System**: Organize tasks with custom tags
+- **Comments**: Add comments to tasks for additional context
+- **Dark Mode**: Beautiful dark and light theme support
+- **Responsive Design**: Works perfectly on desktop and mobile devices
+
+## Weekly Task Functionality
+
+The app now supports weekly tasks that need to be completed multiple times per week:
+
+- **Weekly Task Creation**: When creating a task, check "Weekly Task" and specify how many times per week it should be completed
+- **Progress Tracking**: See your progress with visual indicators (✓✓_ _ _) and progress bars
+- **Completion Records**: Each time you mark a weekly task as done, it creates a completion record
+- **Weekly Reset**: Progress automatically resets every Monday
+- **Statistics**: View detailed weekly statistics and completion history
+- **Visual Feedback**: Progress bars and completion dots show your current status
+
+### How Weekly Tasks Work
+
+1. **Create a Weekly Task**: Check the "Weekly Task" checkbox and set the number of times per week
+2. **Track Progress**: Each completion adds to your weekly count
+3. **Visual Indicators**: See progress with dots and progress bars
+4. **Weekly Stats**: Click "Weekly Stats" to view detailed completion history
+5. **Automatic Reset**: Progress resets every Monday for a fresh start
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

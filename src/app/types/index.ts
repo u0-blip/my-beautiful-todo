@@ -6,6 +6,9 @@ export interface Task {
   size: string;
   urgency: string;
   completed: boolean;
+  isWeekly?: boolean;
+  timesPerWeek?: number;
+  weeklyCompletionCount?: number;
   createdAt: string;
   tags: { tag: { name: string } }[];
 }
@@ -24,6 +27,8 @@ export interface TaskForm {
   size: string;
   urgency: string;
   tags: string;
+  isWeekly: boolean;
+  timesPerWeek: number;
 }
 
 export interface AuthForm {

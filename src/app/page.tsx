@@ -108,19 +108,6 @@ export default function Home() {
           <div className="text-white text-xl">No tasks yet. Add your first frog task!</div>
         ) : (
           <>
-            <TaskList
-              title="Current Tasks"
-              tasks={tasks.filter(task => !task.completed)}
-              onTaskUpdate={(updatedTask) => {
-                setTasks(prev => prev.map(task =>
-                  task.id === updatedTask.id ? updatedTask : task
-                ));
-              }}
-              onTaskDeleted={(taskId) => {
-                setTasks(prev => prev.filter(task => task.id !== taskId));
-              }}
-              emptyMessage="You have no active tasks"
-            />
 
             <TaskList
               title="Done"
@@ -135,6 +122,20 @@ export default function Home() {
               }}
               isCompleted={true}
             />
+            <TaskList
+              title="Current Tasks"
+              tasks={tasks.filter(task => !task.completed)}
+              onTaskUpdate={(updatedTask) => {
+                setTasks(prev => prev.map(task =>
+                  task.id === updatedTask.id ? updatedTask : task
+                ));
+              }}
+              onTaskDeleted={(taskId) => {
+                setTasks(prev => prev.filter(task => task.id !== taskId));
+              }}
+              emptyMessage="You have no active tasks"
+            />
+
           </>
         )}
       </div>
