@@ -189,7 +189,17 @@ export default function Home() {
             {/* Current Tasks Section */}
             <TaskList
               title="Current Tasks"
-              tasks={tasks.filter(task => !task.completed)}
+              tasks={tasks.filter(task => {
+                // Filter out completed tasks
+                if (task.completed) return false;
+
+                // Filter out weekly tasks that are complete for the week
+                if (task.isWeekly && task.timesPerWeek && task.weeklyCompletionCount) {
+                  return task.weeklyCompletionCount < task.timesPerWeek;
+                }
+
+                return true;
+              })}
               onTaskUpdate={(updatedTask) => {
                 setTasks(prev => prev.map(task =>
                   task.id === updatedTask.id ? updatedTask : task
